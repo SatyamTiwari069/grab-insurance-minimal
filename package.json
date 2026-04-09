@@ -1,0 +1,17 @@
+{
+  "name": "grabinsurance",
+  "version": "1.0.0",
+  "description": "Insurance recommendation engine: MCP Server + React Frontend",
+  "private": true,
+  "scripts": {
+    "install:all": "cd mcp-server && npm install && cd ../frontend && npm install && cd ..",
+    "dev": "echo 'Run MCP: cd mcp-server && npm run dev' && echo 'Run Frontend: cd frontend && npm run dev'",
+    "dev:mcp": "cd mcp-server && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build:all": "cd mcp-server && npm run build && cd ../frontend && npm run build && cd ..",
+    "build:mcp": "cd mcp-server && npm run build",
+    "build:frontend": "cd frontend && npm run build"
+  },
+  "keywords": ["insurance", "mcp", "react", "claude", "grabinsurance"]
+}
+

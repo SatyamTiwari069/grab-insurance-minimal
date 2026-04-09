@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+npm-debug.log
+package-lock.json
+yarn.lock
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+/dist/
+/build/
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Frontend build
+/frontend/dist
+/frontend/node_modules
+
+# MCP server build
+/mcp-server/dist
+/mcp-server/node_modules
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Cache
+.eslintcache
+.parcel-cache
+.cache

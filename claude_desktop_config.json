@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "grabinsurance": {
+      "command": "node",
+      "args": [
+        "dist/index.js",
+        "--stdio"
+      ],
+      "cwd": "${HOME}/grab-insurance-minimal/mcp-server",
+      "env": {}
+    }
+  }
+}
