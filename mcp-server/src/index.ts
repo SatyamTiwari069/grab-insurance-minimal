@@ -565,7 +565,25 @@ function createHttpServer() {
   // Main recommendation endpoint
   app.post("/api/recommend", async (req: Request, res: Response) => {
     try {
-      const { deal, sessionId } = req.body as { deal: Deal; sessionId: string };
+      // Support both nested deal object and flat deal properties
+      let deal: Deal;
+      let sessionId: string;
+
+      if (req.body.deal) {
+        // Nested format: { deal: {...}, sessionId: "..." }
+        deal = req.body.deal;
+        sessionId = req.body.sessionId || `session_${Date.now()}`;
+      } else {
+        // Flat format: { merchantName: "...", category: "...", ... }
+        deal = {
+          merchantName: req.body.merchantName,
+          category: req.body.category,
+          subcategory: req.body.subcategory,
+          dealValue: req.body.dealValue,
+          riskTier: req.body.riskTier || "medium",
+        };
+        sessionId = req.body.sessionId || `session_${Date.now()}`;
+      }
 
       // A/B variant assignment (sticky per session)
       const variants = ["variant_A", "variant_B", "variant_C"] as const;
