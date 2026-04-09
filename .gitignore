@@ -53,3 +53,7 @@ logs/
 
 # Claude files
 .claude/
+
+# Documentation & Scripts (for personal use)
+TELEPROMPTER_SCRIPT.md
+LOOM_NOTES.md
