@@ -30,6 +30,10 @@ yarn.lock
 /mcp-server/dist
 /mcp-server/node_modules
 
+# Vite dependencies
+.vite
+.vite/
+
 # OS
 Thumbs.db
 .DS_Store
@@ -42,3 +46,10 @@ logs/
 .eslintcache
 .parcel-cache
 .cache
+
+# Artifacts and PDFs
+*.pdf
+*.html
+
+# Claude files
+.claude/
