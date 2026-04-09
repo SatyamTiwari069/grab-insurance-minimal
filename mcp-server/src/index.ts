@@ -237,16 +237,42 @@ function classifyIntent(deal: Deal) {
   const top = INSURANCE_CATALOG.find((p) => p.id === productIds[0])!;
   const second = INSURANCE_CATALOG.find((p) => p.id === productIds[1])!;
 
-  // Confidence scoring
-  let confidence = 0.62;
-  if (subcatKey) confidence += 0.15; // Subcategory match bonus
-  if (deal.dealValue > 10000) confidence += 0.05; // High-value deal bonus
-  if (deal.dealValue > 50000) confidence += 0.03; // Very high-value bonus
-  if (deal.userHistory && deal.userHistory.length > 0) confidence += 0.08; // Returning user
-  if (top.subcategoryBoost.some((s) => deal.subcategory.toLowerCase().includes(s.toLowerCase()))) {
-    confidence += 0.05; // Strong product-subcategory affinity
+  // Category-specific base confidence — reflects how well-defined the insurance fit is per category
+  const categoryBase: Record<string, number> = {
+    Travel: 0.65,       // Flight/hotel → cancellation/medical is very direct
+    Electronics: 0.65, // Device → warranty/screen protection is very direct
+    Health: 0.63,       // Health products → OPD/accident is clear
+    "Fashion & Beauty": 0.58, // Apparel → return protection is reasonable but softer
+    Food: 0.50,         // Delivery → accident cover is a weaker, more indirect fit
+  };
+
+  function scoreProduct(product: InsuranceProduct): number {
+    let score = categoryBase[deal.category] ?? 0.55;
+
+    if (subcatKey) score += 0.15; // Subcategory rule matched — strong signal
+
+    // Product's own subcategory affinity boost (independent of subcatKey)
+    if (product.subcategoryBoost.some((s) => deal.subcategory.toLowerCase().includes(s.toLowerCase()))) {
+      score += 0.06;
+    }
+
+    // Deal value signals — higher value = more reason to insure
+    if (deal.dealValue > 10000) score += 0.05;
+    if (deal.dealValue > 50000) score += 0.03;
+
+    // Risk tier — high-risk deals clearly benefit from cover
+    if (deal.riskTier === "high") score += 0.05;
+    else if (deal.riskTier === "low") score -= 0.02;
+
+    // Returning user adds mild signal (more data, not a product-fit signal)
+    if (deal.userHistory && deal.userHistory.length > 2) score += 0.04;
+    else if (deal.userHistory && deal.userHistory.length > 0) score += 0.02;
+
+    return Math.min(score, 0.98);
   }
-  confidence = Math.min(confidence, 0.98);
+
+  const confidence = scoreProduct(top);
+  const secondConfidence = scoreProduct(second);
 
   const isAmbiguous = !subcatKey;
   const isBundleOpportunity = deal.dealValue > 20000;
@@ -259,7 +285,7 @@ function classifyIntent(deal: Deal) {
     top,
     second,
     confidence: Math.round(confidence * 100) / 100,
-    secondConfidence: Math.round(Math.max(0.3, confidence - 0.18) * 100) / 100,
+    secondConfidence: Math.round(secondConfidence * 100) / 100,
     reasoning,
     isAmbiguous,
     isBundleOpportunity,
@@ -495,6 +521,27 @@ function createHttpServer() {
   app.use(cors());
   app.use(express.json());
 
+  // Root route
+  app.get("/", (_req: Request, res: Response) => {
+    res.json({
+      name: "GrabInsurance API",
+      version: "1.0.0",
+      status: "running",
+      endpoints: [
+        "GET  /api/health",
+        "GET  /api/products",
+        "GET  /api/brands",
+        "GET  /api/deals",
+        "POST /api/recommend",
+        "POST /api/multi-cart/resolve",
+        "POST /api/conversion",
+        "GET  /api/analytics",
+        "POST /api/cart/add",
+        "GET  /api/cart/:sessionId",
+      ],
+    });
+  });
+
   // Health check
   app.get("/api/health", (_req: Request, res: Response) => {
     res.json({ status: "ok", products: INSURANCE_CATALOG.length, brands: Object.keys(BRANDS).length });
@@ -660,7 +707,7 @@ function createHttpServer() {
       success: true,
       totalSessions: sessions.size,
       totalConversions: conversions.length,
-      conversionRate: sessions.size > 0 ? ((conversions.length / sessions.size) * 100).toFixed(1) : "0.0",
+      conversionRate: sessions.size > 0 ? (Math.min(conversions.length / sessions.size, 1) * 100).toFixed(1) : "0.0",
       totalRevenue,
       avgPremium,
       variantStats,
