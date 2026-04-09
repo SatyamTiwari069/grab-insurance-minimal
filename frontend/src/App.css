@@ -6,16 +6,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --primary:        #5B4FF6;
-  --primary-light:  #EEF2FF;
-  --primary-dark:   #4338CA;
-  --bg:             #F7F8FA;
+  --primary:        #172235;
+  --primary-light:  #E8ECF1;
+  --primary-dark:   #0F1620;
+  --accent:         #D2E600;
+  --accent-light:   #F5FBCC;
+  --accent-dark:    #9DB100;
+  --bg:             #F8F9FA;
   --surface:        #FFFFFF;
   --surface-2:      #F9FAFB;
   --surface-3:      #F3F4F6;
   --border:         #E4E7EC;
   --border-strong:  #C9CDD8;
-  --text-1:         #101828;
+  --text-1:         #172235;
   --text-2:         #475467;
   --text-3:         #98A2B3;
   --success:        #12B76A;
@@ -84,23 +87,24 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 .header__logo-mark {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, var(--primary) 0%, #818CF8 100%);
-  border-radius: var(--radius-sm);
+  width: 108px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  font-weight: 800;
-  color: white;
   flex-shrink: 0;
+}
+
+.header__logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .header__brand-name {
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-1);
+  color: var(--primary);
   letter-spacing: -0.3px;
 }
 
@@ -135,9 +139,10 @@ button { font-family: inherit; cursor: pointer; }
 }
 .nav__item:hover { background: var(--bg); color: var(--text-1); }
 .nav__item--active {
-  background: var(--primary-light);
+  background: var(--accent-light);
   color: var(--primary);
   font-weight: 600;
+  border-bottom: 2px solid var(--accent);
 }
 
 .header__right {
@@ -401,9 +406,9 @@ button { font-family: inherit; cursor: pointer; }
 .cta-btn {
   width: 100%;
   padding: 12px 20px;
-  background: var(--primary);
-  color: white;
-  border: none;
+  background: var(--accent);
+  color: var(--primary);
+  border: 2px solid var(--accent);
   border-radius: var(--radius);
   font-size: 14px;
   font-weight: 600;
@@ -413,11 +418,12 @@ button { font-family: inherit; cursor: pointer; }
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 1px 2px rgba(91,79,246,0.3), 0 2px 4px rgba(91,79,246,0.2);
+  box-shadow: 0 1px 2px rgba(210, 230, 0, 0.3), 0 2px 4px rgba(210, 230, 0, 0.2);
 }
 .cta-btn:hover:not(:disabled) {
-  background: var(--primary-dark);
-  box-shadow: 0 2px 4px rgba(91,79,246,0.4), 0 4px 8px rgba(91,79,246,0.2);
+  background: var(--accent-dark);
+  color: white;
+  box-shadow: 0 2px 4px rgba(210, 230, 0, 0.4), 0 4px 8px rgba(210, 230, 0, 0.2);
   transform: translateY(-1px);
 }
 .cta-btn:disabled {

@@ -153,9 +153,9 @@ export default function App() {
     <div className="app">
       <header className="header">
         <div className="header__left">
-          <div className="header__logo-mark">G</div>
+          <img src="/logo.svg" alt="GrabOn" className="header__logo" />
           <span className="header__brand-name">GrabInsurance</span>
-          <span className="header__brand-tag">Project 2</span>
+          <span className="header__brand-tag">Embedded Insurance</span>
         </div>
 
         <nav className="header__nav">
