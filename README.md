@@ -500,7 +500,540 @@ curl http://localhost:8000/api/health
 
 ---
 
-## 📊 Evaluation Criteria Mapped to Implementation
+## �️ MCP Tools API Reference
+
+**GrabInsurance exposes 9 powerful tools via MCP (Model Context Protocol) for Claude Desktop integration.**
+
+### Overview
+All tools are available through the MCP stdio protocol. Tools support both simple queries and complex multi-category scenarios. Each tool includes detailed input schemas and returns structured JSON responses.
+
+### Tool 1: `classify_deal` ⭐ Core Tool
+**Classify a deal and get top 2 insurance product recommendations with confidence scores.**
+
+**Purpose:** Main business logic—maps any merchant deal to the best matching insurance products with confidence scores, reasoning, and edge case detection.
+
+**Input Schema:**
+```json
+{
+  "merchantName": "string (required) - e.g., Emirates Airline, Apple Store, Myntra",
+  "category": "string (required) - enum: Travel | Electronics | Health | Food | Fashion & Beauty",
+  "subcategory": "string (required) - e.g., Flight, iPhone, Apparel, Pharmacy",
+  "dealValue": "number (required) - Deal value in INR, e.g., 45000",
+  "riskTier": "string (optional) - enum: low | medium | high, default: medium",
+  "userHistory": "object (optional) - User's historical purchase patterns"
+}
+```
+
+**Example Request:**
+```json
+{
+  "merchantName": "MakeMyTrip",
+  "category": "Travel",
+  "subcategory": "Flight",
+  "dealValue": 12400,
+  "riskTier": "medium"
+}
+```
+
+**Output Response:**
+```json
+{
+  "primary": {
+    "product": "Travel Cancellation Cover",
+    "productId": "travel_cancel",
+    "coverage": "Up to ₹1,00,000",
+    "premium": 89,
+    "confidence": "94%",
+    "copy": {
+      "variant_A": "Your ₹12,400 deal. Cancel worry-free for just ₹89.",
+      "variant_B": "Plans change. Protect ₹12,400 for ₹89.",
+      "variant_C": "9 out of 10 travelers add cancellation cover. Just ₹89."
+    }
+  },
+  "secondary": {
+    "product": "Travel Medical Insurance",
+    "productId": "travel_medical",
+    "coverage": "Up to ₹5,00,000",
+    "premium": 67,
+    "confidence": "78%",
+    "copy": { ... 3 variants ... }
+  },
+  "reasoning": "Flight booking detected from merchant MakeMyTrip + Travel category. Medium risk tier applied."
+}
+```
+
+**Use Cases:**
+- ✅ Simulator tab: Get recommendations when user clicks a deal
+- ✅ Claude Desktop: Analyze any merchant → get best insurance products
+- ✅ Dynamic pricing: Different risks get different premiums
+
+---
+
+### Tool 2: `get_premium_quote`
+**Get a dynamic premium quote for a specific insurance product based on deal value and risk tier.**
+
+**Purpose:** Calculate exact premium for a given product. Used after classification to show pricing breakdown.
+
+**Input Schema:**
+```json
+{
+  "productId": "string (required) - Insurance product ID (enum: travel_cancel | travel_medical | electronics_warranty | screen_damage | personal_accident | health_opd | return_protection | purchase_protection)",
+  "dealValue": "number (required) - Deal value in INR",
+  "riskTier": "string (optional) - enum: low | medium | high, default: medium"
+}
+```
+
+**Example Request:**
+```json
+{
+  "productId": "screen_damage",
+  "dealValue": 79999,
+  "riskTier": "high"
+}
+```
+
+**Output Response:**
+```json
+{
+  "product": "Screen Damage Protection",
+  "premium": 1850,
+  "breakdown": {
+    "baseRate": 0.015,
+    "basePremium": 1200,
+    "riskTier": "high",
+    "riskMultiplier": 1.25,
+    "volumeDiscount": "8% off",
+    "minPremium": 149,
+    "finalPremium": 1850
+  }
+}
+```
+
+**Pricing Logic:**
+- **Base Premium** = dealValue × baseRate
+- **Risk Multiplier** = low (0.8) | medium (1.0) | high (1.25)
+- **Volume Discount** = Deals >₹50K get 8% off, >₹20K get 5% off
+- **Final = max(minPremium, basePremium × riskMultiplier × volumeDiscount)**
+
+---
+
+### Tool 3: `generate_offer_copy`
+**Generate hyper-personalized insurance offer copy. Returns 3 A/B variants: Direct (A), Emotional (B), Social proof (C).**
+
+**Purpose:** Create contextual marketing copy that resonates with different user psychology. Each variant is meaningfully different, not synonym swaps.
+
+**Input Schema:**
+```json
+{
+  "merchantName": "string (required) - e.g., Apple Store, Zomato",
+  "category": "string (optional) - Product category",
+  "subcategory": "string (optional) - Product subcategory",
+  "dealValue": "number (required) - Deal value in INR",
+  "productId": "string (required) - Insurance product ID",
+  "premium": "number (required) - Premium being offered"
+}
+```
+
+**Example Request:**
+```json
+{
+  "merchantName": "Apple Store",
+  "category": "Electronics",
+  "dealValue": 79999,
+  "productId": "screen_damage",
+  "premium": 1850
+}
+```
+
+**Output Response:**
+```json
+{
+  "product": "Screen Damage Protection",
+  "copy": {
+    "variant_A": "Your ₹79,999 Apple device. Zero-cost screen repairs for just ₹1,850/year.",
+    "variant_B": "One drop = ₹79,999 gone. Unlimited screen repairs for ₹1,850. Worth it?",
+    "variant_C": "Apple users love this: unlimited screen repairs at ₹1,850. Join 50K+ happy customers."
+  },
+  "note": "variant_A = Direct/value-focused, variant_B = Emotional/fear-based, variant_C = Social proof"
+}
+```
+
+**Variant Strategies:**
+- **Variant A (Direct):** Rational appeal, emphasizes value proposition
+- **Variant B (Emotional):** Fear-based or pain-point focused
+- **Variant C (Social Proof):** Trust/popularity angle
+
+---
+
+### Tool 4: `list_insurance_products`
+**List all available insurance products in the catalog, optionally filtered by category.**
+
+**Purpose:** Browse the full 8-product catalog or search by category. Used in Storefront tab.
+
+**Input Schema:**
+```json
+{
+  "category": "string (optional) - Filter by category: Travel | Electronics | Health | Food | Fashion & Beauty"
+}
+```
+
+**Example Requests:**
+
+**All Products:**
+```json
+{}
+```
+
+**Travel Only:**
+```json
+{
+  "category": "Travel"
+}
+```
+
+**Output Response:**
+```json
+{
+  "count": 8,
+  "products": [
+    {
+      "id": "travel_cancel",
+      "name": "Travel Cancellation Cover",
+      "coverage": "Up to ₹1,00,000",
+      "startingFrom": "₹89",
+      "categories": ["Travel"],
+      "icon": "🛫",
+      "description": "Full refund if your trip gets cancelled due to emergencies, illness, or visa rejection."
+    },
+    {
+      "id": "travel_medical",
+      "name": "Travel Medical Insurance",
+      "coverage": "Up to ₹5,00,000",
+      "startingFrom": "₹49",
+      "categories": ["Travel"],
+      "icon": "🏥",
+      "description": "Covers medical emergencies, hospital stays, and evacuation during travel."
+    },
+    ... (6 more products)
+  ]
+}
+```
+
+**8 Products Overview:**
+| Category | Product | Coverage | Starting From |
+|---|---|---|---|
+| Travel | Travel Cancellation Cover | Up to ₹1,00,000 | ₹89 |
+| Travel | Travel Medical Insurance | Up to ₹5,00,000 | ₹49 |
+| Electronics | Extended Warranty | 2 extra years | ₹199 |
+| Electronics | Screen Damage Protection | Unlimited repairs/year | ₹149 |
+| Health | Personal Accident Cover | Up to ₹50,00,000 | ₹29 |
+| Health | Health OPD Cover | Up to ₹2,00,000/year | ₹199 |
+| Fashion & Beauty | Return & Refund Protection | Full refund guarantee | ₹79 |
+| Fashion & Beauty | Purchase Protection Plan | Price drop + damage | ₹99 |
+
+---
+
+### Tool 5: `resolve_multi_cart`
+**Resolve insurance recommendations when a user has deals from multiple categories (e.g., Myntra + MakeMyTrip). Determines priority and which products to show.**
+
+**Purpose:** Handle complex scenarios where user has deals from Travel, Electronics, Fashion simultaneously. Prioritizes by category value and shows best 2-3 products.
+
+**Input Schema:**
+```json
+{
+  "deals": [
+    {
+      "merchantName": "string",
+      "category": "string",
+      "subcategory": "string",
+      "dealValue": "number",
+      "riskTier": "string (optional)"
+    }
+  ]
+}
+```
+
+**Example Request (Myntra + MakeMyTrip):**
+```json
+{
+  "deals": [
+    {
+      "merchantName": "MakeMyTrip",
+      "category": "Travel",
+      "subcategory": "Flight",
+      "dealValue": 12400,
+      "riskTier": "medium"
+    },
+    {
+      "merchantName": "Myntra",
+      "category": "Fashion & Beauty",
+      "subcategory": "Apparel",
+      "dealValue": 5000,
+      "riskTier": "low"
+    }
+  ]
+}
+```
+
+**Output Response:**
+```json
+{
+  "strategy": "multi_category",
+  "message": "2 categories detected (Travel, Fashion & Beauty). Showing top insurance for each.",
+  "recommendations": [
+    {
+      "deal": { ... MakeMyTrip deal ... },
+      "product": { id: "travel_cancel", name: "Travel Cancellation Cover" },
+      "premium": 89,
+      "copy": { variant_A: "...", variant_B: "...", variant_C: "..." },
+      "confidence": 0.94,
+      "category": "Travel"
+    },
+    {
+      "deal": { ... Myntra deal ... },
+      "product": { id: "return_protection", name: "Return & Refund Protection" },
+      "premium": 79,
+      "copy": { ... 3 variants ... },
+      "confidence": 0.87,
+      "category": "Fashion & Beauty"
+    }
+  ]
+}
+```
+
+**Priority Logic:** Travel > Electronics > Health > Fashion & Beauty > Food
+
+---
+
+### Tool 6: `get_brand_info`
+**Get partner brand information including colors, icon, tagline, and domain for a merchant.**
+
+**Purpose:** Retrieve branding metadata for UI rendering and personalization.
+
+**Input Schema:**
+```json
+{
+  "merchantName": "string (required) - e.g., Emirates Airline, Apple Store"
+}
+```
+
+**Example Request:**
+```json
+{
+  "merchantName": "Emirates Airline"
+}
+```
+
+**Output Response:**
+```json
+{
+  "merchantName": "Emirates Airline",
+  "color": "#D71921",
+  "icon": "✈️",
+  "tagline": "Fly Better",
+  "domain": "emirates.com"
+}
+```
+
+**Supported Merchants (10+):**
+Emirates, Club Mahindra, Apple Store, Sony, Max Healthcare, Apollo Pharmacy, Zomato Premium, Swiggy Instamart, H&M India, Nykaa
+
+---
+
+### Tool 7: `track_conversion`
+**Track a successful insurance sale conversion for A/B testing analytics.**
+
+**Purpose:** Record when user purchases insurance, capture which variant copy was used, calculate revenue metrics.
+
+**Input Schema:**
+```json
+{
+  "sessionId": "string (required) - Unique session identifier",
+  "productId": "string (required) - Insurance product ID",
+  "premium": "number (required) - Premium amount paid",
+  "variant": "string (required) - enum: variant_A | variant_B | variant_C",
+  "dealValue": "number (optional) - Original deal value",
+  "category": "string (optional) - Product category",
+  "merchantName": "string (optional) - Merchant name for attribution"
+}
+```
+
+**Example Request:**
+```json
+{
+  "sessionId": "session_abc123def456",
+  "productId": "travel_cancel",
+  "premium": 89,
+  "variant": "variant_B",
+  "dealValue": 12400,
+  "category": "Travel",
+  "merchantName": "MakeMyTrip"
+}
+```
+
+**Output Response:**
+```json
+{
+  "success": true,
+  "totalConversions": 27,
+  "conversionId": "conv_1712732400000"
+}
+```
+
+**Tracked Metrics:**
+- Total conversions per variant
+- Revenue per variant
+- Conversion rate trending
+- Category breakdown
+
+---
+
+### Tool 8: `get_analytics`
+**Get A/B testing analytics: conversion rates, variant performance, revenue by category, and top products.**
+
+**Purpose:** Dashboard data for measuring which copy variants and products perform best.
+
+**Input Schema:**
+```json
+{}
+```
+
+**Output Response:**
+```json
+{
+  "totalSessions": 42,
+  "totalConversions": 27,
+  "totalRevenue": 3650,
+  "variantStats": {
+    "variant_A": 8,
+    "variant_B": 12,
+    "variant_C": 7
+  },
+  "categoryRevenue": {
+    "Travel": 950,
+    "Electronics": 1200,
+    "Fashion": 700,
+    "Health": 400,
+    "Food": 400
+  },
+  "recentConversions": [
+    {
+      "sessionId": "session_xyz789",
+      "productId": "screen_damage",
+      "productName": "Screen Damage Protection",
+      "premium": 1850,
+      "variant": "variant_C",
+      "dealValue": 79999,
+      "category": "Electronics",
+      "merchantName": "Apple Store",
+      "timestamp": "2026-04-10T14:45:23Z"
+    },
+    ... (last 5 conversions)
+  ]
+}
+```
+
+**Key Metrics:**
+- **Conversion Rate** = totalConversions / totalSessions
+- **Revenue per Variant** = sum of premiums for that variant
+- **Top Category** = highest revenue generating category
+- **Best Variant** = highest conversion count
+
+---
+
+### Tool 9: `run_test_scenarios` ⭐ Testing Tool
+**Run all 10 mock deal scenarios and return classification results for each.**
+
+**Purpose:** Verify system works across diverse merchants, categories, subcategories, deal values, and risk tiers. Useful for testing and validation.
+
+**Input Schema:**
+```json
+{}
+```
+
+**Output Response:**
+```json
+{
+  "scenarios": [
+    {
+      "merchant": "Emirates Airline",
+      "category": "Travel",
+      "subcategory": "Flight",
+      "dealValue": "₹45,000",
+      "topProduct": "Travel Cancellation Cover",
+      "premium": "₹150",
+      "confidence": "94%",
+      "sampleCopy": "Your ₹45,000 Emirates trip. Cancel worry-free for just ₹150.",
+      "reasoning": "International flight booking detected. High deal value justifies travel cancellation as top product."
+    },
+    {
+      "merchant": "Apple Store",
+      "category": "Electronics",
+      "subcategory": "iPhone",
+      "dealValue": "₹79,999",
+      "topProduct": "Screen Damage Protection",
+      "premium": "₹1,850",
+      "confidence": "95%",
+      "sampleCopy": "Your ₹79,999 Apple device. Zero-cost screen repairs for just ₹1,850/year.",
+      "reasoning": "Premium smartphone detected. Screen damage most critical risk for high-value device."
+    },
+    ... (8 more scenarios)
+  ],
+  "count": 10
+}
+```
+
+**10 Test Scenarios:**
+1. Emirates (₹45K) - Travel/Flight
+2. Club Mahindra (₹8.5K) - Travel/Hotel
+3. Apple Store (₹79.9K) - Electronics/iPhone
+4. Sony (₹13K) - Electronics/Headphones
+5. Max Healthcare (₹3K) - Health/Diagnosis
+6. Apollo Pharmacy (₹1.5K) - Health/Medicine
+7. Swiggy (₹1.2K) - Food/Grocery
+8. Zomato (₹500) - Food/Delivery
+9. H&M (₹3.5K) - Fashion/Apparel
+10. Nykaa (₹3K) - Beauty/Cosmetics
+
+---
+
+## 🔌 Claude Desktop Integration
+
+To use these tools in Claude Desktop:
+
+1. **Start MCP server with stdio mode:**
+   ```bash
+   cd mcp-server
+   npm install
+   npm start -- --stdio
+   ```
+
+2. **Configure Claude Desktop:**
+   Edit `%APPDATA%\Claude\claude_desktop_config.json`:
+   ```json
+   {
+     "mcpServers": {
+       "grabinsurance": {
+         "command": "node",
+         "args": ["path/to/mcp-server/src/index.ts", "--stdio"],
+         "env": {
+           "NODE_NO_WARNINGS": "1"
+         }
+       }
+     }
+   }
+   ```
+
+3. **Restart Claude Desktop** and all 9 tools become available as Claude actions
+
+4. **Use in Claude:**
+   - "What insurance should I recommend for a ₹12,400 MakeMyTrip flight booking?"
+   - "Generate 3 copy variants for a ₹79,999 Apple purchase"
+   - "Analyze all 10 test scenarios and tell me which categories perform best"
+
+---
+
+## �📊 Evaluation Criteria Mapped to Implementation
 
 ### 1. **Technical Depth (20%)**
 
