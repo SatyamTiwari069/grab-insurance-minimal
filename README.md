@@ -16,7 +16,43 @@ This project flips the model: **GrabOn knows exactly what users are about to buy
 
 ---
 
-## 🏛️ System Architecture
+## � Live Demo & Screenshots
+
+**[📹 Watch Full 15-minute Walkthrough →](https://www.loom.com/share/4e7515dec6214410bbed4025db4f98c5)**
+
+### User Journey Screenshots (In Sequence):
+
+#### 1. **Home Screen – GrabOn Branding**
+![Home Screen](screenshots/Screenshot%202026-04-10%20070541.png)
+GrabInsurance landing with GrabOn official logo, navigation tabs (Deal Simulator, Storefront, Analytics), and session tracking.
+
+#### 2. **Deal Simulator – Intent Classification**
+![Deal Simulator - Extended Warranty](screenshots/Screenshot%202026-04-10%20070614.png)
+User selects Apple Store (₹80K) → System classifies as Electronics → Recommends Screen Damage Protection (₹1,380/year) and Extended Warranty (₹2,300/year) with AI-generated copy variants.
+
+#### 3. **Deal Simulator – Travel Insurance Recommendation**
+![Deal Simulator - Travel Coverage](screenshots/Screenshot%202026-04-10%20070631.png)
+User selects Emirates Airline (₹45K) → Travel intent detected → Recommends Travel Cancellation Cover (₹374) and Travel Medical Insurance (₹267) with personalized copy showing confidence metrics.
+
+#### 4. **Insurance Storefront – Product Catalog**
+![Storefront - All 8 Products](screenshots/Screenshot%202026-04-10%20070650.png)
+Complete product catalog organized by category: Travel, Electronics, Health, Food, Fashion & Beauty. Shows pricing (₹49–₹2,300/year) and detailed coverage descriptions. Categories can be filtered.
+
+#### 5. **Analytics Dashboard – A/B Testing Results**
+![Analytics - Full Dashboard](screenshots/Screenshot%202026-04-10%20070726.png)
+Real-time conversion metrics: 4 sessions, 20 conversions, 100% conversion rate, ₹7K revenue. A/B Variant Performance shows Variant A (Direct): 70%, Variant B (Emotional): 0%, Variant C (Social Proof): 30%. Revenue breakdown by category.
+
+#### 6. **Analytics – Recent Conversions Detail**
+![Analytics - Conversions List](screenshots/Screenshot%202026-04-10%20070743.png)
+Last 10 conversions showing product name, category, variant used (Direct/Emotional/Social Proof), premium amount, and timestamp. Tracks which copy variant drove each purchase.
+
+#### 7. **Analytics – Full Page View**
+![Analytics - Complete View](screenshots/Screenshot%202026-04-10%20070806.png)
+Aggregated analytics showing conversion funnel, A/B variant performance, category revenue breakdown, and recent transaction log for full session visibility.
+
+---
+
+## �🏛️ System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -1199,6 +1235,75 @@ To stay focused on **Project 2 requirements**, deliberately excluded:
    - This README covers **what, why, how** for every component
    - Design decisions explained, not just implemented
    - Evaluation rubric explicitly mapped to implementation
+
+---
+
+## 🎥 Live Demo
+
+**Loom Walkthrough:** https://www.loom.com/share/4e7515dec6214410bbed4025db4f98c5
+
+15-minute comprehensive walkthrough covering:
+- System architecture and design decisions
+- End-to-end flow (Deal Simulator → Recommendations → Analytics)
+- A/B testing in action
+- Real-time conversion tracking
+- All 3 tabs and key features
+
+---
+
+## 📸 Screenshots & Feature Walkthrough
+
+### 1. Deal Simulator - Initial View
+![Deal Simulator - Hero State](./screenshots/Screenshot%202026-04-10%20070541.png)
+Shows the Deal Simulator tab with 10 active deals from different merchants. User can select any deal to get insurance recommendations.
+
+### 2. Deal Details & Product Recommendations
+![Deal Simulator - Product Recommendations](./screenshots/Screenshot%202026-04-10%20070614.png)
+Displays Apple Store deal (₹80K) with contextually matched insurance products:
+- Screen Damage Protection (₹1,380/year) - Primary recommendation
+- Extended Warranty (₹2,300/year) - Secondary option
+Each shows A/B variant copy with "View Details" and "Purchase" CTAs.
+
+### 3. Mobile Responsive View
+![Deal Simulator - Responsive](./screenshots/Screenshot%202026-04-10%20070631.png)
+Travel deal on tablet/mobile view showing Emirates Airline flight with Travel Cancellation and Travel Medical recommendations properly stacked and legible.
+
+### 4. Insurance Storefront - All Products
+![Insurance Storefront Catalog](./screenshots/Screenshot%202026-04-10%20070650.png)
+Complete catalog of 8 micro-insurance products organized by category:
+- **Travel:** Travel Cancellation (₹89), Travel Medical (₹199)
+- **Electronics:** Extended Warranty (₹299), Screen Damage (₹99)
+- **Health:** Personal Accident (₹49), Health OPD (₹199)
+- **Food & Fashion:** Purchase Protection (₹129), Return Journey (₹69)
+
+All products show coverage details, base pricing, and included benefits.
+
+### 5. Analytics Dashboard - Overview
+![Analytics Dashboard](./screenshots/Screenshot%202026-04-10%20070726.png)
+Real-time metrics visualization:
+- **Total Sessions:** 4 unique user sessions
+- **Conversions:** 20 insurance purchases
+- **Conversion Rate:** 100.0% (sessions with conversions)
+- **Total Revenue:** ₹7K generated
+- **A/B Testing Results:** Variant A (Direct/Rational) leading with 70% of conversions, Variant C (Social Proof) at 30%
+- **Revenue by Category:** Electronics (₹3,680), Travel (₹1,843), Health (₹427)
+
+### 6. Recent Conversions - Purchase History
+![Recent Conversions List](./screenshots/Screenshot%202026-04-10%20070743.png)
+Last 10 conversion events with:
+- Product name and category
+- Purchase amount (₹29-₹2,300 range)
+- Variant used (Direct, Emotional, Social Proof)
+- Examples: Fashion Purchase (₹99), Health OPD (₹199), Electronics Screen Damage (₹1,380)
+
+### 7. Analytics - Full View
+![Analytics Full Dashboard](./screenshots/Screenshot%202026-04-10%20070806.png)
+Comprehensive analytics interface showing:
+- KPI cards (sessions, conversions, rate, revenue)
+- A/B variant performance comparison
+- Revenue breakdown by category
+- Recent conversions list
+- All metrics in real-time
 
 ---
 
